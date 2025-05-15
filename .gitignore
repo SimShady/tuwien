@@ -39,3 +39,6 @@
 
 # direnv
 .direnv
+
+# data files
+*.dat
