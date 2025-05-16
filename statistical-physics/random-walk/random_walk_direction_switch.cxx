@@ -17,12 +17,16 @@ int main() {
   random_device gen;
   uniform_real_distribution<double> distribution(0.0, 1.0);
 
+  double D = 0.0;
+
   ofstream expectation_values("data/expectation_values_ds.dat");
   ofstream point_distribution("data/point_distribution_ds.dat");
   for(size_t n = 0; n < N; n++) {
     double rand = distribution(gen);
     if (rand > 0.5) {
-      velo
+      velocities[n] = 1.0;
+    } else {
+      velocities[n] = -1.0;
     }
   }
   for(size_t i = 1; i < iterations; i++) {
@@ -30,15 +34,12 @@ int main() {
     double sigma = 0.0;
     for(size_t n = 0; n < N; n++) {
       double rand = distribution(gen);
-      point_dist[points[n]+iterations/2] -= 1;
-      if (rand > 0.5) {
-        points[n] += 1;
-        points_random_step[n] += step;
-      } else {
-        points[n] -= 1;
-        points_random_step[n] -= step;
+      point_dist[points[n]+iterations/2] -= 1.0;
+      if(rand < 0.1) {
+        velocities[n] *= -1.0;
       }
-      point_dist[points[n]+iterations/2] += 1;
+      points[n] += velocities[n];
+      point_dist[points[n]+iterations/2] += 1.0;
 
       mu += points[n];
       sigma += points[n]*points[n];
@@ -47,6 +48,8 @@ int main() {
     mu *= norm;
     sigma = sqrt(sigma*norm);
     expectation_values << i << " " << mu << " " << sigma << endl;
+
+    D += sigma*sigma/(2*i);
     
     int center = iterations/2;
     for (int j = 0; j < iterations; j++) {
@@ -54,6 +57,10 @@ int main() {
     }
     point_distribution << endl << endl;
   }
+
+  D /= iterations;
+
+  cout << "D=" << D << endl;
 
   return 0;
 }
